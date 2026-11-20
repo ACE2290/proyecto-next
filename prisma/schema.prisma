@@ -1,0 +1,40 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Propietario {
+  // Identificador único del propietario en la base de datos.
+  id       String     @id @default(uuid()) @db.Uuid
+  nombre   String
+  // Evita registrar dos veces al mismo propietario usando su correo como clave única.
+  email    String     @unique
+  // Relación inversa: este propietario puede tener varias mascotas.
+  // La base de datos permite crear al propietario antes de registrar su primera mascota.
+  mascotas Paciente[]
+}
+
+model Paciente {
+  // Cada mascota tiene su propio identificador único; el nombre no tiene que ser único.
+  id            String      @id @default(uuid()) @db.Uuid
+  nombre        String
+  // Fecha sin hora, adecuada para la fecha de alta del paciente.
+  fechaAlta     DateTime    @db.Date
+  sintomas      String
+  // Clave foránea obligatoria: cada paciente debe pertenecer a un propietario.
+  propietarioId String      @db.Uuid
+  // Relación con el propietario; un propietario puede estar relacionado con muchos pacientes.
+  propietario   Propietario @relation(fields: [propietarioId], references: [id])
+
+  // Acelera las búsquedas de pacientes por propietario.
+  @@index([propietarioId])
+}
