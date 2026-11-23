@@ -38,3 +38,72 @@ model Paciente {
   // Acelera las búsquedas de pacientes por propietario.
   @@index([propietarioId])
 }
+
+model Juego {
+  id             String  @id @default(uuid()) @db.Uuid
+  // Se usa en la URL: /juegos/[slug]
+  slug           String  @unique
+  titulo         String
+  subtitulo      String
+  // Clave de plataforma en minúsculas: playstation | xbox | nintendo | pc
+  plataforma     String
+  nombre         String
+  descripcion    String
+  precio         Int
+  precioAnterior Int?
+  // Etiqueta visible en la tarjeta (-13%, NUEVO, EXCLUSIVO...).
+  etiqueta       String?
+  rating         Float
+  resenas        Int
+  preventa       Boolean @default(false)
+  // Clases de gradiente de Tailwind mientras no haya imágenes reales.
+  arte           String
+  carrito        CarritoItem[]
+  // 0 = sin imagen. Se incrementa al subir una nueva para romper la caché del navegador.
+  imagenVersion  Int     @default(0)
+  imagen         JuegoImagen?
+
+  @@index([plataforma])
+}
+
+model Usuario {
+  id           String        @id @default(uuid()) @db.Uuid
+  usuario      String        @unique
+  // scrypt con sal, formato "sal:hash". Nunca se guarda la contraseña en claro.
+  passwordHash String
+  // ADMIN | CLIENTE
+  rol          String        @default("CLIENTE")
+  carrito      CarritoItem[]
+  pedidos      Pedido[]
+}
+
+model CarritoItem {
+  id        String  @id @default(uuid()) @db.Uuid
+  usuarioId String  @db.Uuid
+  juegoId   String  @db.Uuid
+  cantidad  Int
+  usuario   Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  juego     Juego   @relation(fields: [juegoId], references: [id], onDelete: Cascade)
+
+  @@unique([usuarioId, juegoId])
+}
+
+model Pedido {
+  id        String   @id @default(uuid()) @db.Uuid
+  usuarioId String   @db.Uuid
+  total     Int
+  creado    DateTime @default(now())
+  // Copia de lo comprado (nombre, precio, cantidad) para que no cambie si el juego cambia de precio.
+  items     Json
+  usuario   Usuario  @relation(fields: [usuarioId], references: [id])
+
+  @@index([usuarioId])
+}
+
+// Los bytes van aparte para que listar juegos no cargue las imágenes.
+model JuegoImagen {
+  juegoId String @id @db.Uuid
+  tipo    String
+  datos   Bytes
+  juego   Juego  @relation(fields: [juegoId], references: [id], onDelete: Cascade)
+}
