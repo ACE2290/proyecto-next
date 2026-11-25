@@ -1,4 +1,5 @@
 import { PrismaPg } from "@prisma/adapter-pg";
+import { hashPassword } from "../app/lib/password";
 import { PrismaClient } from "../app/generated/prisma/client";
 
 const connectionString = process.env.DATABASE_URL;
@@ -73,7 +74,27 @@ async function main() {
     });
   }
 
-  console.log("Seed completado: 2 propietarios y 3 pacientes.");
+  const juegos = [
+    { slug: "eclipse", titulo: "ECLIPSE", subtitulo: "EL ÚLTIMO GUARDIÁN", plataforma: "playstation", nombre: "Eclipse: El último guardián", descripcion: "Un caballero solitario cruza un mundo en ruinas bajo un sol que se apaga.", precio: 1399, precioAnterior: 1599, etiqueta: "-13%", rating: 4.9, resenas: 128, preventa: false, arte: "from-amber-700 to-stone-900" },
+    { slug: "neon-rush", titulo: "NEON RUSH", subtitulo: "OVERDRIVE", plataforma: "xbox", nombre: "Neon Rush: Overdrive", descripcion: "Carreras callejeras a toda velocidad en una ciudad de neón.", precio: 1199, precioAnterior: 1499, etiqueta: "-20%", rating: 4.8, resenas: 96, preventa: false, arte: "from-fuchsia-700 to-indigo-950" },
+    { slug: "wild-kingdom", titulo: "WILD KINGDOM", subtitulo: "ORIGINS", plataforma: "nintendo", nombre: "Wild Kingdom: Origins", descripcion: "Explora islas flotantes junto a un zorro aventurero.", precio: 1299, precioAnterior: null, etiqueta: "EXCLUSIVO", rating: 4.9, resenas: 204, preventa: false, arte: "from-emerald-500 to-sky-700" },
+    { slug: "circuit-legends-26", titulo: "CIRCUIT", subtitulo: "LEGENDS 26", plataforma: "playstation", nombre: "Circuit Legends 26", descripcion: "El simulador de carreras más realista de la temporada.", precio: 1499, precioAnterior: null, etiqueta: "NUEVO", rating: 4.7, resenas: 83, preventa: false, arte: "from-orange-500 to-zinc-800" },
+    { slug: "starfall", titulo: "STARFALL", subtitulo: "HORIZONTES", plataforma: "pc", nombre: "Starfall: Horizontes", descripcion: "Epopeya espacial de exploración. Aparta tu copia hoy.", precio: 1699, precioAnterior: null, etiqueta: "PREVENTA", rating: 0, resenas: 0, preventa: true, arte: "from-sky-600 to-slate-900" },
+  ];
+
+  for (const juego of juegos) {
+    await prisma.juego.upsert({ where: { slug: juego.slug }, update: juego, create: juego });
+  }
+
+  // Administrador por defecto pedido por el dueño del proyecto.
+  // shortcut: contraseña débil de demo ("12345"); cambiarla antes de publicar el sitio.
+  await prisma.usuario.upsert({
+    where: { usuario: "admin" },
+    update: { rol: "ADMIN" },
+    create: { usuario: "admin", passwordHash: hashPassword("12345"), rol: "ADMIN" },
+  });
+
+  console.log("Seed completado: 2 propietarios, 3 pacientes y 5 juegos.");
 }
 
 main()

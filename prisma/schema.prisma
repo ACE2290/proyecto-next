@@ -13,28 +13,79 @@ datasource db {
 }
 
 model Propietario {
-  // Identificador único del propietario en la base de datos.
   id       String     @id @default(uuid()) @db.Uuid
   nombre   String
-  // Evita registrar dos veces al mismo propietario usando su correo como clave única.
   email    String     @unique
-  // Relación inversa: este propietario puede tener varias mascotas.
-  // La base de datos permite crear al propietario antes de registrar su primera mascota.
   mascotas Paciente[]
 }
 
 model Paciente {
-  // Cada mascota tiene su propio identificador único; el nombre no tiene que ser único.
   id            String      @id @default(uuid()) @db.Uuid
   nombre        String
-  // Fecha sin hora, adecuada para la fecha de alta del paciente.
   fechaAlta     DateTime    @db.Date
   sintomas      String
-  // Clave foránea obligatoria: cada paciente debe pertenecer a un propietario.
   propietarioId String      @db.Uuid
-  // Relación con el propietario; un propietario puede estar relacionado con muchos pacientes.
   propietario   Propietario @relation(fields: [propietarioId], references: [id])
-
-  // Acelera las búsquedas de pacientes por propietario.
   @@index([propietarioId])
+}
+
+model Juego {
+  id             String  @id @default(uuid()) @db.Uuid
+  slug           String  @unique
+  titulo         String
+  subtitulo      String
+  plataforma     String
+  nombre         String
+  descripcion    String
+  precio         Int
+  precioAnterior Int?
+  etiqueta       String?
+  rating         Float
+  resenas        Int
+  preventa       Boolean @default(false)
+  arte           String
+  carrito        CarritoItem[]
+  imagenVersion  Int     @default(0)
+  imagen         JuegoImagen?
+
+  @@index([plataforma])
+}
+
+model Usuario {
+  id           String        @id @default(uuid()) @db.Uuid
+  usuario      String        @unique
+  passwordHash String
+  rol          String        @default("CLIENTE")
+  carrito      CarritoItem[]
+  pedidos      Pedido[]
+}
+
+model CarritoItem {
+  id        String  @id @default(uuid()) @db.Uuid
+  usuarioId String  @db.Uuid
+  juegoId   String  @db.Uuid
+  cantidad  Int
+  usuario   Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  juego     Juego   @relation(fields: [juegoId], references: [id], onDelete: Cascade)
+
+  @@unique([usuarioId, juegoId])
+}
+
+model Pedido {
+  id        String   @id @default(uuid()) @db.Uuid
+  usuarioId String   @db.Uuid
+  total     Int
+  creado    DateTime @default(now())
+  items     Json
+  usuario   Usuario  @relation(fields: [usuarioId], references: [id])
+
+  @@index([usuarioId])
+}
+
+// Los bytes van aparte para que listar juegos no cargue las imágenes.
+model JuegoImagen {
+  juegoId String @id @db.Uuid
+  tipo    String
+  datos   Bytes
+  juego   Juego  @relation(fields: [juegoId], references: [id], onDelete: Cascade)
 }
