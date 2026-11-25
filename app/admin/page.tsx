@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { prisma } from "../lib/prisma";
 import { requerirRol } from "../lib/sesion";
-import { cambiarImagen, cambiarPrecio, crearJuego } from "../actions/admin";
+import { cambiarImagen, cambiarPrecio, crearJuego, eliminarJuego } from "../actions/admin";
 import { salir } from "../actions/auth";
+import BotonEliminar from "../components/BotonEliminar";
 
 const campo = "h-9 rounded border border-white/10 bg-white/5 px-3 text-sm";
 
@@ -51,6 +52,9 @@ export default async function Admin({ searchParams }: { searchParams: Promise<{ 
             <form action={cambiarImagen.bind(null, g.id)} className="flex gap-2">
               <input name="imagen" type="file" required accept="image/png,image/jpeg,image/webp" className="w-44 text-xs" />
               <button className="rounded bg-white/10 px-3">{g.imagenVersion ? "Cambiar imagen" : "Subir imagen"}</button>
+            </form>
+            <form action={eliminarJuego.bind(null, g.id)}>
+              <BotonEliminar nombre={g.nombre} />
             </form>
           </li>
         ))}

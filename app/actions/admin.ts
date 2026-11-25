@@ -60,3 +60,10 @@ export async function cambiarImagen(id: string, formData: FormData) {
   revalidatePath("/", "layout");
   redirect("/admin");
 }
+
+export async function eliminarJuego(id: string) {
+  await requerirRol("ADMIN");
+  await prisma.juego.delete({ where: { id } });
+  revalidatePath("/", "layout");
+  redirect("/admin");
+}
