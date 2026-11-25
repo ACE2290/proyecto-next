@@ -15,6 +15,7 @@ export async function agregarAlCarrito(juegoId: string) {
     create: { usuarioId: s.id, juegoId, cantidad: 1 },
   });
   revalidatePath("/", "layout");
+  return true; // para mostrar la notificación
 }
 
 export async function quitarDelCarrito(juegoId: string) {

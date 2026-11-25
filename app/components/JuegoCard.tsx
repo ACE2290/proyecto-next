@@ -1,10 +1,13 @@
 import Link from "next/link";
 import type { Juego } from "../generated/prisma/client";
-import { agregarAlCarrito } from "../actions/carrito";
+import BotonAgregar from "./BotonAgregar";
 import { urlImagen } from "../lib/imagen";
+import { porcentajeDescuento } from "../lib/descuento";
 
 export default function JuegoCard({ g }: { g: Juego }) {
   const img = urlImagen(g);
+  const pct = porcentajeDescuento(g);
+  const etiqueta = pct ? `-${pct}%` : g.etiqueta;
   return (
     <article className="overflow-hidden rounded-lg bg-white/5 transition hover:ring-1 hover:ring-orange-500">
       <Link href={`/juegos/${g.slug}`} className="block">
@@ -12,7 +15,7 @@ export default function JuegoCard({ g }: { g: Juego }) {
           {/* eslint-disable-next-line @next/next/no-img-element */}
           {img && <img src={img} alt="" className="absolute inset-0 h-full w-full object-cover" />}
           {img && <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />}
-          {g.etiqueta && <span className="absolute left-3 top-3 rounded bg-black/60 px-1.5 py-0.5 text-[8px] font-bold">{g.etiqueta}</span>}
+          {etiqueta && <span className="absolute left-3 top-3 rounded bg-black/60 px-1.5 py-0.5 text-[8px] font-bold">{etiqueta}</span>}
           <b className="relative text-xl font-black">{g.titulo}</b>
           <span className="relative text-[8px] tracking-widest text-orange-400">{g.subtitulo}</span>
         </div>
@@ -27,9 +30,7 @@ export default function JuegoCard({ g }: { g: Juego }) {
           ${g.precio.toLocaleString("en-US")}{" "}
           {g.precioAnterior && <s className="text-[9px] font-normal text-white/40">${g.precioAnterior.toLocaleString("en-US")}</s>}
         </span>
-        <form action={agregarAlCarrito.bind(null, g.id)}>
-          <button className="h-7 w-7 rounded bg-orange-500 font-bold" aria-label={`Añadir ${g.nombre}`}>+</button>
-        </form>
+        <BotonAgregar juegoId={g.id} nombre={g.nombre} className="h-7 w-7 rounded bg-orange-500 font-bold" aria-label={`Añadir ${g.nombre}`}>+</BotonAgregar>
       </div>
     </article>
   );

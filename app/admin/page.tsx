@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { prisma } from "../lib/prisma";
 import { requerirRol } from "../lib/sesion";
-import { cambiarImagen, cambiarPrecio, crearJuego, eliminarJuego } from "../actions/admin";
+import { cambiarImagen, cambiarPrecio, crearJuego, eliminarJuego, ponerDescuento } from "../actions/admin";
 import { salir } from "../actions/auth";
 import BotonEliminar from "../components/BotonEliminar";
+import { porcentajeDescuento } from "../lib/descuento";
 
 const campo = "h-9 rounded border border-white/10 bg-white/5 px-3 text-sm";
 
@@ -44,10 +45,17 @@ export default async function Admin({ searchParams }: { searchParams: Promise<{ 
       <ul className="mt-6 space-y-2">
         {juegos.map((g) => (
           <li key={g.id} className="flex flex-wrap items-center gap-4 rounded-lg bg-white/5 p-3 text-sm">
-            <span className="flex-1">{g.nombre} <span className="text-white/40">· {g.plataforma}</span></span>
-            <form action={cambiarPrecio.bind(null, g.id)} className="flex gap-2">
+            <span className="flex-1">{g.nombre} <span className="text-white/40">· {g.plataforma}</span>
+              {g.precioAnterior && <span className="ml-2 text-orange-400">En oferta -{porcentajeDescuento(g)}% (antes ${g.precioAnterior.toLocaleString("en-US")})</span>}
+            </span>
+            <form key={`precio-${g.precio}`} action={cambiarPrecio.bind(null, g.id)} className="flex gap-2">
               <input name="precio" type="number" min={1} step={1} defaultValue={g.precio} className={`${campo} w-28`} />
               <button className="rounded bg-white/10 px-3">Guardar precio</button>
+            </form>
+            <form key={`descuento-${g.precio}-${g.precioAnterior}`} action={ponerDescuento.bind(null, g.id)} className="flex items-center gap-2">
+              <input name="descuento" type="number" min={0} max={90} step={1} required defaultValue={porcentajeDescuento(g)} aria-label={`Descuento en % para ${g.nombre}`} className={`${campo} w-20`} />
+              <span aria-hidden="true">%</span>
+              <button className="rounded bg-white/10 px-3 py-2">Aplicar descuento</button>
             </form>
             <form action={cambiarImagen.bind(null, g.id)} className="flex gap-2">
               <input name="imagen" type="file" required accept="image/png,image/jpeg,image/webp" className="w-44 text-xs" />

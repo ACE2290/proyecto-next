@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "../../lib/prisma";
-import { agregarAlCarrito } from "../../actions/carrito";
+import BotonAgregar from "../../components/BotonAgregar";
 import { urlImagen } from "../../lib/imagen";
 
 // Página 100% dinámica (sesión + base de datos): se permite que bloquee al navegar.
@@ -32,9 +32,7 @@ export default async function JuegoPage({ params }: { params: Promise<{ slug: st
             ${g.precio.toLocaleString("en-US")}{" "}
             {g.precioAnterior && <s className="text-base font-normal text-white/40">${g.precioAnterior.toLocaleString("en-US")}</s>}
           </p>
-          <form action={agregarAlCarrito.bind(null, g.id)}>
-            <button className="mt-6 rounded bg-orange-500 px-8 py-3 font-bold">{g.preventa ? "Apartar" : "Agregar al carrito"}</button>
-          </form>
+          <BotonAgregar juegoId={g.id} nombre={g.nombre} className="mt-6 rounded bg-orange-500 px-8 py-3 font-bold">{g.preventa ? "Apartar" : "Agregar al carrito"}</BotonAgregar>
         </div>
       </div>
     </main>

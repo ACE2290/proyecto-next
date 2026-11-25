@@ -46,7 +46,29 @@ export async function cambiarPrecio(id: string, formData: FormData) {
   await requerirRol("ADMIN");
   const precio = Number(formData.get("precio"));
   if (!precioValido(precio)) redirect("/admin?error=Precio inválido");
-  await prisma.juego.update({ where: { id }, data: { precio } });
+  // Un precio nuevo es el precio normal: quita el descuento y su etiqueta "-X%".
+  await prisma.$transaction([
+    prisma.juego.update({ where: { id }, data: { precio, precioAnterior: null } }),
+    prisma.juego.updateMany({ where: { id, etiqueta: { startsWith: "-" } }, data: { etiqueta: null } }),
+  ]);
+  revalidatePath("/", "layout");
+  redirect("/admin");
+}
+
+// 0 quita el descuento. Siempre se calcula sobre el precio normal, así no se acumulan.
+export async function ponerDescuento(id: string, formData: FormData) {
+  await requerirRol("ADMIN");
+  const pct = Number(texto(formData, "descuento") || NaN);
+  if (!Number.isInteger(pct) || pct < 0 || pct > 90) redirect("/admin?error=El descuento debe ser un entero de 0 a 90");
+  const g = await prisma.juego.findUnique({ where: { id } });
+  if (!g) redirect("/admin?error=Ese juego ya no existe");
+  const normal = g.precioAnterior ?? g.precio;
+  const precio = Math.round((normal * (100 - pct)) / 100);
+  if (!precioValido(precio) || (pct > 0 && precio >= normal)) redirect("/admin?error=El precio es muy bajo para ese descuento");
+  await prisma.juego.update({
+    where: { id },
+    data: { precio, precioAnterior: pct ? normal : null, ...(g.etiqueta?.startsWith("-") && { etiqueta: null }) },
+  });
   revalidatePath("/", "layout");
   redirect("/admin");
 }
