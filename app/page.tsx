@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import Carrusel from "./components/Carrusel";
 import JuegoCard from "./components/JuegoCard";
 import { listarJuegos, tabs } from "./lib/juegos";
 import { getSesion } from "./lib/sesion";
@@ -83,17 +84,20 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ t
         </nav>
       </header>
 
-      <section className="relative flex min-h-[420px] flex-col py-10 justify-center bg-gradient-to-r from-[#0B0B0E] via-[#0B0B0E]/80 to-orange-900/50 px-4 md:px-16">
-        <span className="mb-4 w-fit bg-orange-500 px-2 py-0.5 text-[8px] font-bold">NUEVO LANZAMIENTO</span>
-        <h1 className="text-4xl font-black md:text-6xl leading-[1.05]">
-          NO SOLO JUEGUES.<br />VIVE LA AVENTURA.
-        </h1>
-        <p className="mt-6 max-w-sm text-xs text-white/60">
-          Historias que te atrapan. Mundos que te esperan. Encuentra tu próximo juego favorito en GamePlanet.
-        </p>
-        <div className="mt-6 flex items-center gap-6 text-xs">
-          <Link href="/catalogo?tab=nuevos" className="rounded bg-orange-500 px-6 py-3 font-bold">Explorar novedades →</Link>
-          <Link href="/catalogo?tab=proximamente">Ver preventas</Link>
+      <section className="relative flex min-h-[420px] flex-col justify-center px-4 pb-20 pt-10 md:min-h-[560px] md:px-16">
+        <Carrusel />
+        <div className="relative z-10">
+          <span className="mb-4 block w-fit bg-orange-500 px-2 py-0.5 text-[8px] font-bold">NUEVO LANZAMIENTO</span>
+          <h1 className="text-4xl font-black md:text-6xl leading-[1.05]">
+            NO SOLO JUEGUES.<br />VIVE LA AVENTURA.
+          </h1>
+          <p className="mt-6 max-w-sm text-xs text-white/80">
+            Historias que te atrapan. Mundos que te esperan. Encuentra tu próximo juego favorito en GamePlanet.
+          </p>
+          <div className="mt-6 flex items-center gap-6 text-xs">
+            <Link href="/catalogo?tab=nuevos" className="rounded bg-orange-500 px-6 py-3 font-bold">Explorar novedades →</Link>
+            <Link href="/catalogo?tab=proximamente">Ver preventas</Link>
+          </div>
         </div>
       </section>
 

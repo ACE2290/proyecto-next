@@ -13,53 +13,38 @@ datasource db {
 }
 
 model Propietario {
-  // Identificador único del propietario en la base de datos.
   id       String     @id @default(uuid()) @db.Uuid
   nombre   String
-  // Evita registrar dos veces al mismo propietario usando su correo como clave única.
   email    String     @unique
-  // Relación inversa: este propietario puede tener varias mascotas.
-  // La base de datos permite crear al propietario antes de registrar su primera mascota.
   mascotas Paciente[]
 }
 
 model Paciente {
-  // Cada mascota tiene su propio identificador único; el nombre no tiene que ser único.
   id            String      @id @default(uuid()) @db.Uuid
   nombre        String
-  // Fecha sin hora, adecuada para la fecha de alta del paciente.
   fechaAlta     DateTime    @db.Date
   sintomas      String
-  // Clave foránea obligatoria: cada paciente debe pertenecer a un propietario.
   propietarioId String      @db.Uuid
-  // Relación con el propietario; un propietario puede estar relacionado con muchos pacientes.
   propietario   Propietario @relation(fields: [propietarioId], references: [id])
-
-  // Acelera las búsquedas de pacientes por propietario.
   @@index([propietarioId])
 }
 
 model Juego {
   id             String  @id @default(uuid()) @db.Uuid
-  // Se usa en la URL: /juegos/[slug]
   slug           String  @unique
   titulo         String
   subtitulo      String
-  // Clave de plataforma en minúsculas: playstation | xbox | nintendo | pc
   plataforma     String
   nombre         String
   descripcion    String
   precio         Int
   precioAnterior Int?
-  // Etiqueta visible en la tarjeta (-13%, NUEVO, EXCLUSIVO...).
   etiqueta       String?
   rating         Float
   resenas        Int
   preventa       Boolean @default(false)
-  // Clases de gradiente de Tailwind mientras no haya imágenes reales.
   arte           String
   carrito        CarritoItem[]
-  // 0 = sin imagen. Se incrementa al subir una nueva para romper la caché del navegador.
   imagenVersion  Int     @default(0)
   imagen         JuegoImagen?
 
@@ -69,9 +54,7 @@ model Juego {
 model Usuario {
   id           String        @id @default(uuid()) @db.Uuid
   usuario      String        @unique
-  // scrypt con sal, formato "sal:hash". Nunca se guarda la contraseña en claro.
   passwordHash String
-  // ADMIN | CLIENTE
   rol          String        @default("CLIENTE")
   carrito      CarritoItem[]
   pedidos      Pedido[]
@@ -93,7 +76,6 @@ model Pedido {
   usuarioId String   @db.Uuid
   total     Int
   creado    DateTime @default(now())
-  // Copia de lo comprado (nombre, precio, cantidad) para que no cambie si el juego cambia de precio.
   items     Json
   usuario   Usuario  @relation(fields: [usuarioId], references: [id])
 
